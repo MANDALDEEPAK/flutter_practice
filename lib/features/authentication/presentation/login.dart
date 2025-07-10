@@ -1,8 +1,12 @@
 import 'package:expense_tracker/app_theme/app_size.dart';
+import 'package:expense_tracker/features/authentication/presentation/controllers/login_controller.dart';
+import 'package:expense_tracker/features/shared/validator_provider.dart';
+import 'package:expense_tracker/routes/routes_enum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:go_router/go_router.dart';
 
 
 class Login extends ConsumerStatefulWidget {
@@ -17,6 +21,18 @@ class _LoginState extends ConsumerState<Login>
   final _formKey = GlobalKey<FormBuilderState>();
   @override
   Widget build(BuildContext context) {
+    ref.listen(loginControllerProvider, (previous, next){
+      next.maybeWhen(
+        error: (err, st) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          duration: Duration(seconds: 1),
+            content: Text(err.toString()))),
+          orElse: () => null);
+    });
+    
+    final loginState = ref.watch(loginControllerProvider);
+    final mode = ref.watch(validateModeControllerProvider(id: 1));
+    final passShow = ref.watch(PassControllerProvider(id: 1));
+    
     return Scaffold(
       appBar: AppBar(
         title: Text('Login Page'),
@@ -24,6 +40,7 @@ class _LoginState extends ConsumerState<Login>
       body: Padding(
         padding: const EdgeInsets.all(12.0),
         child: FormBuilder(
+          autovalidateMode: mode,
           key: _formKey,
             child: ListView(
               children: [
@@ -41,31 +58,37 @@ class _LoginState extends ConsumerState<Login>
 
                 FormBuilderTextField(
                   name: 'password',
-                  obscureText: true,
+                  obscureText: passShow ? false : true,
                   decoration: InputDecoration(
                       hintText: 'Password',
+                    suffixIcon: IconButton(onPressed: (){
+                      ref.read(passControllerProvider(id: 1).notifier).change();
+                    }, icon: Icon(passShow ? Icons.lock_open : Icons.lock))
                   ),
                   validator: FormBuilderValidators.compose([
-                    FormBuilderValidators.min(5),
-                    FormBuilderValidators.max(40),
+                    FormBuilderValidators.minLength(5),
+                    FormBuilderValidators.maxLength(40),
                     FormBuilderValidators.required()
                   ]),
                 ),
                 AppSizes.gapH20,
-                ElevatedButton(onPressed: (){
+                ElevatedButton(onPressed: loginState.isLoading ? null:(){
+                  FocusScope.of(context).unfocus();
                   if(_formKey.currentState!.saveAndValidate(focusOnInvalid:false)){
                     final map = _formKey.currentState!.value;
-                    print(map);
-
-
+                    ref.read(loginControllerProvider.notifier).userLogin(email: map['email'], password: map['password']);
+                  }else{
+                    ref.read(validateModeControllerProvider(id: 1).notifier).change();
                   }
-                }, child: Text('Submit')),
+                }, child:loginState.isLoading ? CircularProgressIndicator() : Text('Submit')),
                 AppSizes.gapH20,
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text('Don\'t have Account'),
                     TextButton(onPressed: (){
+
+                      context.pushNamed(AppRoute.signup.name);
 
                     }, child: Text('Sign_Up'))
                   ],

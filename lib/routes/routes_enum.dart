@@ -7,6 +7,8 @@ enum AppRoute{
   login,
   signup,
   expenses,
-  profile
+  profile,
+  home,
+  signOut
 
 }
