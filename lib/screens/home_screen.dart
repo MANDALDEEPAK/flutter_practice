@@ -74,7 +74,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
           final expenses = snapshot.data!;
 
-          // ✅ FIX: Delay setState to avoid calling during build
           WidgetsBinding.instance.addPostFrameCallback((_) {
             final newTotal = expenses.fold(0.0, (sum, e) => sum + e.amount);
             if (totalExpense != newTotal) {
