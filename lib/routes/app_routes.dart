@@ -1,8 +1,9 @@
-import 'package:expense_tracker/features/authentication/presentation/login.dart';
-import 'package:expense_tracker/features/authentication/presentation/sign_up.dart';
-import 'package:expense_tracker/features/home/presentation/home_page.dart';
+
 import 'package:expense_tracker/features/shared/user_stream_provider.dart';
 import 'package:expense_tracker/routes/routes_enum.dart';
+import 'package:expense_tracker/screens/home_screen.dart';
+import 'package:expense_tracker/screens/login_screen.dart';
+import 'package:expense_tracker/screens/register_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -14,9 +15,9 @@ GoRouter  router(Ref ref) {
   return  GoRouter(
       redirect: (context, state){
         final authenticated = userState.valueOrNull !=null;
-        final authenticating = (state.matchedLocation == '/login' || state.matchedLocation == '/signUp');
+        final authenticating = (state.matchedLocation == '/login_screen' || state.matchedLocation == '/register_screen');
         if(authenticated == false){
-          return authenticating ? null : '/login';
+          return authenticating ? null : '/login_screen';
         }
         return null;
       },
@@ -24,20 +25,20 @@ GoRouter  router(Ref ref) {
         GoRoute(
             path: '/',
           pageBuilder: (context, state){
-              return NoTransitionPage(child: HomePage());
+              return NoTransitionPage(child: HomeScreen());
           }
         ),
         GoRoute(
             path: '/login',
             pageBuilder: (context, state){
-              return NoTransitionPage(child: Login());
+              return NoTransitionPage(child: LoginScreen());
             }
         ),
         GoRoute(
             path: '/SignUp',
             name: AppRoute.signup.name,
             pageBuilder: (context, state){
-              return NoTransitionPage(child: SignUp());
+              return NoTransitionPage(child: RegisterScreen());
             }
         ),
       ]

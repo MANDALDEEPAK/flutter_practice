@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:uuid/enums.dart';
 part 'validator_provider.g.dart';
 
 @riverpod
