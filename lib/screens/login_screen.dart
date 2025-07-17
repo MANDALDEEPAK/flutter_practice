@@ -1,72 +1,94 @@
 import 'package:expense_tracker/app_theme/app_size.dart';
-import 'package:expense_tracker/features/shared/validator_provider.dart';
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'register_screen.dart';
+import 'package:flutter/material.dart';
 import 'home_screen.dart';
+import 'register_screen.dart';
 
-class LoginScreen extends ConsumerStatefulWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  bool _obscurePassword = true;
+  bool isLoading = false;
+  String errorMessage = '';
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  Future<void> loginUser() async {
+  Future<void> _login() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
+
     try {
       await _auth.signInWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
       );
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Login failed: ${e.toString()}"),
-      ));
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        errorMessage = e.message ?? 'Login failed';
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Login_Page")),
+      appBar: AppBar(title: const Text("Login")),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             TextField(
-              controller: emailController,
+              controller: _emailController,
               decoration: const InputDecoration(labelText: "Email"),
             ),
             AppSizes.gapH20,
             TextField(
-              controller: passwordController,
-              obscureText: true,
+              controller: _passwordController,
+              obscureText: _obscurePassword,
               decoration: InputDecoration(
-                  labelText: "Password",
-                  suffixIcon: IconButton(onPressed: (){
-                    ref.read(passControllerProvider(id: 1).notifier).change();
-                  }, icon: Icon(ref.watch(PassControllerProvider(id: 1))?Icons.lock_open : Icons.lock))
+                labelText: "Password",
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                ),
               ),
-              
             ),
             AppSizes.gapH20,
-            AppSizes.gapH20,
+            if (errorMessage.isNotEmpty)
+              Text(errorMessage, style: const TextStyle(color: Colors.red)),
             ElevatedButton(
-              onPressed: loginUser,
-              child: const Text("Login"),
+              onPressed: isLoading ? null : _login,
+              child: isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text("Login"),
             ),
-            AppSizes.gapH20,
             AppSizes.gapH20,
             TextButton(
               onPressed: () {
@@ -75,8 +97,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   MaterialPageRoute(builder: (_) => const RegisterScreen()),
                 );
               },
-              child: const Text("Don't have an account? Register here"),
-            )
+              child: const Text("Don't have an account? Register"),
+            ),
           ],
         ),
       ),

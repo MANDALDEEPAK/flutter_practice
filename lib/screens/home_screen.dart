@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expense_tracker/features/authentication/data/auth_respository.dart';
+import 'package:expense_tracker/widgets/app_drawer.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'add_expense_screen.dart';
@@ -38,6 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: AppDrawer(),
       appBar: AppBar(
         title: const Text("My Expenses"),
         // actions: [
@@ -47,26 +49,27 @@ class _HomeScreenState extends State<HomeScreen> {
         //   ),
         // ],
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-              child: Text('Admin'),
-            ),
-            ListTile(
-              onTap: (){
-                AuthRepository.userSignOut();
-              },
-              leading: Icon(Icons.exit_to_app),
-              title: const Text('Sign Out'),
-            )
-          ],
-        ),
-      ),
+      // drawer: Drawer(
+      //   child: ListView(
+      //     padding: EdgeInsets.zero,
+      //     children: [
+      //       DrawerHeader(
+      //         decoration: BoxDecoration(
+      //           color: Colors.blue,
+      //         ),
+      //         child: Text('Admin'),
+      //       ),
+      //       ListTile(
+      //         onTap: (){
+      //           AuthRepository.userSignOut();
+      //         },
+      //         leading: Icon(Icons.exit_to_app),
+      //         title: const Text('Sign Out'),
+      //       )
+      //     ],
+      //   ),
+      // ),
+
       body: StreamBuilder<List<Expense>>(
         stream: getExpenses(),
         builder: (context, snapshot) {
